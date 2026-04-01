@@ -1,3 +1,7 @@
+// Copyright 2025 Robin Liu <robinliu27@163.com>. All rights reserved.
+// Use of this source code is governed by a MIT style
+// license that can be found in the LICENSE file.
+
 package rest
 
 import (
@@ -8,6 +12,17 @@ import (
 	"github.com/robinlg/iamlib/pkg/runtime"
 	"github.com/robinlg/iamlib/pkg/scheme"
 )
+
+// Interface captures the set of operations for generically interacting with IAM REST apis.
+type Interface interface {
+	Verb(verb string) *Request
+	Post() *Request
+	Put() *Request
+	// Patch(pt types.PatchType) *Request
+	Get() *Request
+	Delete() *Request
+	APIVersion() scheme.GroupVersion
+}
 
 // ClientContentConfig controls how RESTClient communicates with the server.
 type ClientContentConfig struct {
@@ -37,6 +52,21 @@ type ClientContentConfig struct {
 	ContentType  string
 	GroupVersion scheme.GroupVersion
 	Negotiator   runtime.ClientNegotiator
+}
+
+// HasBasicAuth returns whether the configuration has basic authentication or not.
+func (c *ClientContentConfig) HasBasicAuth() bool {
+	return len(c.Username) != 0
+}
+
+// HasTokenAuth returns whether the configuration has token authentication or not.
+func (c *ClientContentConfig) HasTokenAuth() bool {
+	return len(c.BearerToken) != 0 || len(c.BearerTokenFile) != 0
+}
+
+// HasKeyAuth returns whether the configuration has secretId/secretKey authentication or not.
+func (c *ClientContentConfig) HasKeyAuth() bool {
+	return len(c.SecretID) != 0 && len(c.SecretKey) != 0
 }
 
 // RESTClient imposes common IAM API conventions on a set of resource paths.
@@ -81,4 +111,34 @@ func NewRESTClient(baseURL *url.URL, versionedAPIPath string,
 		content:          config,
 		Client:           client,
 	}, nil
+}
+
+// Verb begins a Verb request.
+func (c *RESTClient) Verb(verb string) *Request {
+	return NewRequest(c).Verb(verb)
+}
+
+// Post begins a POST request. Short for c.Verb("POST").
+func (c *RESTClient) Post() *Request {
+	return c.Verb("POST")
+}
+
+// Put begins a PUT request. Short for c.Verb("PUT").
+func (c *RESTClient) Put() *Request {
+	return c.Verb("PUT")
+}
+
+// Get begins a GET request. Short for c.Verb("GET").
+func (c *RESTClient) Get() *Request {
+	return c.Verb("GET")
+}
+
+// Delete begins a DELETE request. Short for c.Verb("DELETE").
+func (c *RESTClient) Delete() *Request {
+	return c.Verb("DELETE")
+}
+
+// APIVersion returns the APIVersion this RESTClient is expected to use.
+func (c *RESTClient) APIVersion() scheme.GroupVersion {
+	return c.content.GroupVersion
 }

@@ -7,19 +7,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
 	"sync"
 	"testing"
 	"time"
-
-	"mime/multipart"
-
-	"os"
 
 	"github.com/elazarl/goproxy"
 )
@@ -764,7 +762,7 @@ func testPostServer(t *testing.T) *httptest.Server {
 				`{"Lower":{"Color":"green","Size":1.7},"Upper":{"Color":"red","Size":0},"a":"a","name":"Cindy"}`,
 			)
 			if !bytes.Equal(body, comparedBody) {
-				t.Errorf(`Expected correct json but got ` + string(body))
+				t.Error(`Expected correct json but got ` + string(body))
 			}
 		case test_post_case8_send_json_with_long_id_number:
 			t.Logf("case %v ", test_post_case8_send_json_with_long_id_number)
@@ -788,7 +786,7 @@ func testPostServer(t *testing.T) *httptest.Server {
 				`{"Bfalse":false,"BoolArray":[true,false],"Btrue":true,"Float":12.345,"FloatArray":[1.23,4.56,7.89],"Int":42,"IntArray":[1,2],"String":"a string","StringArray":["string1","string2"]}`,
 			)
 			if !bytes.Equal(body, comparedBody) {
-				t.Errorf(`Expected correct json but got ` + string(body))
+				t.Error(`Expected correct json but got ` + string(body))
 			}
 		case test_post_case12_send_slice_string,
 			test_post_case13_send_slice_string_pointer,
@@ -799,7 +797,7 @@ func testPostServer(t *testing.T) *httptest.Server {
 			body, _ := ioutil.ReadAll(r.Body)
 			comparedBody := []byte(`["string1","string2"]`)
 			if !bytes.Equal(body, comparedBody) {
-				t.Errorf(`Expected correct json but got ` + string(body))
+				t.Error(`Expected correct json but got ` + string(body))
 			}
 		case test_post_case14_send_int_pointer:
 			t.Logf("case %v ", test_post_case14_send_int_pointer)
@@ -2290,7 +2288,7 @@ func TestErrorTypeWrongKey(t *testing.T) {
 		End()
 	if len(err) != 0 {
 		if err[0].Error() != "Type func: incorrect type \"wrongtype\"" {
-			t.Errorf("Wrong error message: " + err[0].Error())
+			t.Error("Wrong error message: " + err[0].Error())
 		}
 	} else {
 		t.Error("Should have error")
@@ -2319,7 +2317,7 @@ func TestErrorThenReUseBase(t *testing.T) {
 		End()
 	if len(err) != 0 {
 		if err[0].Error() != "Type func: incorrect type \"wrongtype\"" {
-			t.Errorf("Wrong error message: " + err[0].Error())
+			t.Error("Wrong error message: " + err[0].Error())
 		}
 	} else {
 		t.Error("Should have error")
