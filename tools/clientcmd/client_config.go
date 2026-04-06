@@ -160,3 +160,23 @@ func (config *DirectClientConfig) getAuthInfo() AuthInfo {
 func (config *DirectClientConfig) getServer() Server {
 	return *config.config.Server
 }
+
+// BuildConfigFromFlags is a helper function that builds configs from a master
+// url or a iamconfig filepath. These are passed in as command line flags for cluster
+// components. Warnings should reflect this usage. If neither masterUrl or iamconfigPath
+// are passed in we fallback to inClusterConfig. If inClusterConfig fails, we fallback
+// to the default config.
+func BuildConfigFromFlags(serverURL, iamconfigPath string) (*restclient.Config, error) {
+	config, err := LoadFromFile(iamconfigPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(serverURL) > 0 {
+		config.Server.Address = serverURL
+	}
+
+	directClientConfig := &DirectClientConfig{*config}
+
+	return directClientConfig.ClientConfig()
+}
